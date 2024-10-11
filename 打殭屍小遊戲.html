@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&display=swap" rel="stylesheet">
+    <title>打殭屍小遊戲</title>
+    <style>
+        body {
+            font-family: "Noto Sans TC", sans-serif;
+        }
+
+        .container {
+            margin: 0px 20px 20px 0px;
+            float: left;
+        }
+
+        #game-area {
+            background-image: url('./image/haunted-house-gothic-style_23-2151626632.jpg');
+            background-size: 900px 500px;
+            background-repeat: no-repeat;
+            width: 900px;
+            height: 500px;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            line-height: 500px;
+            color: red;
+            font-size: 50px;
+
+            img {
+                width: 100px;
+                filter: drop-shadow(0 0 5px white);
+                position: absolute;
+                user-select: none;
+            }
+
+            #timesUp {
+                line-height: 50px;
+                position: absolute;
+                top: 30%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        #start {
+            width: 200px;
+            height: 50px;
+            font-size: 1.5rem;
+            font-family: "Noto Sans TC", sans-serif;
+            border-radius: 10px;
+        }
+
+        #start:hover {
+            background: rgba(255, 255, 0, 1);
+        }
+
+        table,
+        tr,
+        td {
+            border: 1px solid black;
+            text-align: center;
+        }
+
+        .player-record {
+            width: 300px;
+        }
+
+        .score-record {
+            width: 100px;
+        }
+
+        .btn {
+            width: 50px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div id="game-area">
+            <input id="start" type="button" value="開始遊戲">
+        </div>
+        <p id="score">分數: 0 分</p>
+        <p id="timeLeft">剩餘時間: 30 秒</p>
+        <hr>
+        <div>
+            <span>玩家名稱:</span>
+            <input id="player-name" type="text">
+            <input id="update-score" type="button" value="紀錄成績">
+        </div>
+    </div>
+
+    <div class="container">
+        <table>
+            <tr>
+                <td class="player-record">玩家名稱</td>
+                <td class="score-record">分數</td>
+                <td class="btn"></td>
+            </tr>
+        </table>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+        integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script>
+        $(function () {
+            // 殭屍編號
+            let zbid = 1
+
+            // 得分
+            let score = 0
+
+            // 剩下時間
+            let timeLeft
+
+            // 隨機函數
+            const rand = function (min, max) {
+                return Math.floor(Math.random() * (max - min + 1)) + min
+            }
+
+            // 殭屍移動
+            const zbmove = function (id) {
+                $(`#zbid${id}`).animate({
+                    top: `+=${rand(-100, 100)}px`,
+                    left: `+=${rand(-100, 100)}px`,
+                }, rand(800, 1000), 'linear', function () {
+                    zbmove(id)
+                })
+            }
+
+            // 按下開始
+            $('#start').on('click', function () {
+                // 隱藏開始按鈕
+                $('#start').css('display', 'none')
+                // 重設時間及分數並印出初始時間及分數
+                score = 0
+                $('#score').text(`分數: ${score} 分`)
+                timeLeft = 30
+                $('#timeLeft').text(`剩餘時間: ${timeLeft} 秒`)
+                // 移除時間到字樣
+                $('#timesUp').remove()
+
+                const setInt = setInterval(function () {
+                    // 如果時間到停止生成殭屍
+                    if (timeLeft === 0) {
+                        // 刪除所有圖片
+                        $('img').remove()
+                        // 顯示時間到字樣
+                        $('#game-area').prepend('<div id="timesUp">時間到!!!</div>')
+                        // 重新顯示按鈕並將按鈕改為重新開始 
+                        $('#start').css('display', 'inline-block')
+                        $('#start').attr('value', '重新開始')
+                        clearInterval(setInt)
+                    }
+                    else {
+                        // 重複計時器每次作用，將時間-1並印出時間
+                        timeLeft--
+                        $('#timeLeft').text(`剩餘時間: ${timeLeft} 秒`)
+
+                        // 設置rng，每秒機率出0~3之殭屍
+                        const num = rand(0, 3)
+                        for (let i = 0; i < num; i++) {
+                            // 新增殭屍
+                            $('#game-area').append(`<img src="./image/0669.png_300.png" id="zbid${zbid}">`)
+                            // 殭屍初始位置
+                            $(`#zbid${zbid}`).css({ 'top': `${rand(0, 400)}px`, 'left': `${rand(0, 800)}px` })
+                            // 殭屍移動
+                            zbmove(zbid)
+                            // 點擊殭屍
+                            $(`#zbid${zbid}`).on('click', function () {
+                                // 加分並顯示分數
+                                score++
+                                $('#score').text(`分數: ${score} 分`)
+                                // 換成血圖
+                                $(this).attr('src', './image/blood.png')
+                                // 停止移動
+                                $(this).stop()
+                                // 不可點擊
+                                $(this).css("pointer-events", "none")
+                            })
+                            zbid++
+                        }
+                    }
+                }, 1000)
+            })
+
+            // 點擊紀錄成績
+            $('#update-score').on('click', function () {
+                $('table').append(`<tr><td class="player-record">${$('#player-name').val()}</td><td class="score-record">${score}</td><td><input type="button" value="刪除"></td></tr>`)
+                $('#player-name').val('')
+
+            })
+        })
+    </script>
+</body>
+
+</html>
