@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zn-TW">
 
 <head>
     <meta charset="UTF-8">
@@ -9,6 +9,7 @@
     <style>
         body {
             font-family: "Noto Sans TC", sans-serif;
+            background: lightblue;
         }
 
         .container {
@@ -30,7 +31,7 @@
             font-size: 50px;
 
             img {
-                width: 100px;
+                width: 150px;
                 filter: drop-shadow(0 0 5px white);
                 position: absolute;
                 user-select: none;
@@ -43,6 +44,25 @@
                 left: 50%;
                 transform: translate(-50%, -50%);
             }
+        }
+
+        #box-score {
+            width: 200px;
+            height: 100px;
+            float: left;
+        }
+
+        #box-rule {
+            width: 700px;
+            height: 100px;
+            float: right;
+        }
+
+        #rule-title {
+            color: blue;
+            font-size: 1.5rem;
+            display: inline-block;
+            margin-top: 5px;
         }
 
         #start {
@@ -62,6 +82,7 @@
         td {
             border: 1px solid black;
             text-align: center;
+            background: white;
         }
 
         .player-record {
@@ -84,8 +105,14 @@
         <div id="game-area">
             <input id="start" type="button" value="開始遊戲">
         </div>
-        <p id="score">分數: 0 分</p>
-        <p id="timeLeft">剩餘時間: 30 秒</p>
+        <div id="box-score">
+            <p id="score">分數: 0 分</p>
+            <p id="timeLeft">剩餘時間: 30 秒</p>
+        </div>
+        <div id="box-rule">
+            <span id="rule-title">遊戲規則:</span>
+            <span>滑鼠射擊殭屍+1分，射擊到貓貓-5分</span>
+        </div>
         <hr>
         <div>
             <span>玩家名稱:</span>
@@ -108,7 +135,7 @@
         integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script>
         $(function () {
-            // 殭屍編號
+            // 殭屍或貓貓編號
             let zbid = 1
 
             // 得分
@@ -161,19 +188,19 @@
                         timeLeft--
                         $('#timeLeft').text(`剩餘時間: ${timeLeft} 秒`)
 
-                        // 設置rng，每秒機率出0~3之殭屍
-                        const num = rand(0, 3)
-                        for (let i = 0; i < num; i++) {
-                            // 新增殭屍
-                            $('#game-area').append(`<img src="./image/0669.png_300.png" id="zbid${zbid}">`)
-                            // 殭屍初始位置
-                            $(`#zbid${zbid}`).css({ 'top': `${rand(0, 400)}px`, 'left': `${rand(0, 800)}px` })
-                            // 殭屍移動
+                        // 設置rng，每秒機率出0~3之殭屍，如果num為4出貓貓
+                        const num = rand(0, 4)
+                        if (num === 4) {
+                            // 新增貓貓
+                            $('#game-area').append(`<img src="./image/cat.png" id="zbid${zbid}">`)
+                            // 貓貓初始位置
+                            $(`#zbid${zbid}`).css({ 'top': `${rand(0, 350)}px`, 'left': `${rand(0, 750)}px` })
+                            // 貓貓移動
                             zbmove(zbid)
-                            // 點擊殭屍
+                            // 點擊貓貓
                             $(`#zbid${zbid}`).on('click', function () {
-                                // 加分並顯示分數
-                                score++
+                                // 扣分並顯示分數
+                                score -= 5
                                 $('#score').text(`分數: ${score} 分`)
                                 // 換成血圖
                                 $(this).attr('src', './image/blood.png')
@@ -184,15 +211,45 @@
                             })
                             zbid++
                         }
+                        else {
+                            for (let i = 0; i < num; i++) {
+                                // 新增殭屍
+                                $('#game-area').append(`<img src="./image/0669.png_300.png" id="zbid${zbid}">`)
+                                // 殭屍初始位置
+                                $(`#zbid${zbid}`).css({ 'top': `${rand(0, 350)}px`, 'left': `${rand(0, 750)}px` })
+                                // 殭屍移動
+                                zbmove(zbid)
+                                // 點擊殭屍
+                                $(`#zbid${zbid}`).on('click', function () {
+                                    // 加分並顯示分數
+                                    score++
+                                    $('#score').text(`分數: ${score} 分`)
+                                    // 換成血圖
+                                    $(this).attr('src', './image/blood.png')
+                                    // 停止移動
+                                    $(this).stop()
+                                    // 不可點擊
+                                    $(this).css("pointer-events", "none")
+                                })
+                                zbid++
+                            }
+                        }
                     }
                 }, 1000)
             })
 
             // 點擊紀錄成績
             $('#update-score').on('click', function () {
-                $('table').append(`<tr><td class="player-record">${$('#player-name').val()}</td><td class="score-record">${score}</td><td><input type="button" value="刪除"></td></tr>`)
+                // 紀錄姓名及分數
+                $('table').append(`<tr><td class="player-record">${$('#player-name').val()}</td><td class="score-record">${score}</td><td><input class="del" type="button" value="刪除"></td></tr>`)
+                // 清空輸入欄位
                 $('#player-name').val('')
-
+                // 清空刪除鈕事件
+                $('.del').off('click')
+                // 刪除紐按下後刪除紀錄
+                $('.del').on('click', function () {
+                    $(this).parent().parent().remove()
+                })
             })
         })
     </script>
