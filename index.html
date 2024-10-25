@@ -194,50 +194,52 @@
                         const num = rand(0, 4)
                         if (num === 4) {
                             // 新增貓貓
-                            $('#game-area').append(`<img src="./image/cat.png" id="zbid${zbid}">`)
+                            $('#game-area').append(`<img src="./image/cat.png" id="zbid${zbid}" class="cat">`)
                             // 貓貓初始位置
                             $(`#zbid${zbid}`).css({ 'top': `${rand(0, 350)}px`, 'left': `${rand(0, 750)}px` })
                             // 貓貓移動
                             zbmove(zbid)
-                            // 點擊貓貓
-                            $(`#zbid${zbid}`).on('click', function () {
-                                // 扣分並顯示分數
-                                score -= 5
-                                $('#score').text(`分數: ${score} 分`)
-                                // 換成血圖
-                                $(this).attr('src', './image/blood.png')
-                                // 停止移動
-                                $(this).stop()
-                                // 不可點擊
-                                $(this).css("pointer-events", "none")
-                            })
                             zbid++
                         }
                         else {
                             for (let i = 0; i < num; i++) {
                                 // 新增殭屍
-                                $('#game-area').append(`<img src="./image/0669.png_300.png" id="zbid${zbid}">`)
+                                $('#game-area').append(`<img src="./image/0669.png_300.png" id="zbid${zbid}" class="zb">`)
                                 // 殭屍初始位置
                                 $(`#zbid${zbid}`).css({ 'top': `${rand(0, 350)}px`, 'left': `${rand(0, 750)}px` })
                                 // 殭屍移動
                                 zbmove(zbid)
-                                // 點擊殭屍
-                                $(`#zbid${zbid}`).on('click', function () {
-                                    // 加分並顯示分數
-                                    score++
-                                    $('#score').text(`分數: ${score} 分`)
-                                    // 換成血圖
-                                    $(this).attr('src', './image/blood.png')
-                                    // 停止移動
-                                    $(this).stop()
-                                    // 不可點擊
-                                    $(this).css("pointer-events", "none")
-                                })
                                 zbid++
                             }
                         }
                     }
                 }, 1000)
+            })
+
+            // 點擊貓貓
+            $('#game-area').on('click', '.cat', function () {
+                // 扣分並顯示分數
+                score -= 5
+                $('#score').text(`分數: ${score} 分`)
+                // 換成血圖
+                $(this).attr('src', './image/blood.png')
+                // 停止移動
+                $(this).stop()
+                // 不可點擊
+                $(this).css("pointer-events", "none")
+            })
+
+            // 點擊殭屍
+            $('#game-area').on('click', '.zb', function () {
+                // 加分並顯示分數
+                score++
+                $('#score').text(`分數: ${score} 分`)
+                // 換成血圖
+                $(this).attr('src', './image/blood.png')
+                // 停止移動
+                $(this).stop()
+                // 不可點擊
+                $(this).css("pointer-events", "none")
             })
 
             // 點擊紀錄成績
@@ -246,12 +248,11 @@
                 $('table').append(`<tr><td class="player-record">${$('#player-name').val()}</td><td class="score-record">${score}</td><td><input class="del" type="button" value="刪除"></td></tr>`)
                 // 清空輸入欄位
                 $('#player-name').val('')
-                // 清空刪除鈕事件
-                $('.del').off('click')
-                // 刪除紐按下後刪除紀錄
-                $('.del').on('click', function () {
-                    $(this).parent().parent().remove()
-                })
+            })
+
+            // 刪除紐按下後刪除紀錄
+            $('table').on('click', '.del', function () {
+                $(this).parent().parent().remove()
             })
         })
     </script>
